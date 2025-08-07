@@ -1,30 +1,238 @@
-import { View, TextInput, Button, Text } from 'react-native';
+import { View, TextInput, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Alert } from 'react-native';
 import { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { useRouter } from 'expo-router';
 import { setDoc, doc } from 'firebase/firestore';
 import { auth, db } from '../../firebase';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { images } from '../../constants';
 
-export default function Register() {
+
+const { width } = Dimensions.get('window');
+
+const Register = () => {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('user');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isFocusedEmail, setIsFocusedEmail] = useState(false);
+  const [isFocusedPassword, setIsFocusedPassword] = useState(false);
+  const [isFocusedConfirmPassword, setIsFocusedConfirmPassword] = useState(false);
+  const [error, setError] = useState('');
+  const role = 'admin';
 
   const handleRegister = async () => {
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      Alert.alert("Error", "Passwords do not match.");
+      return;
+    }
+
     try {
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
       await setDoc(doc(db, 'users', userCred.user.uid), { role });
     } catch (e) {
-      alert('Registration failed');
+      setError('Registration failed.');
+      Alert.alert("Error", "Registration failed.");
     }
   };
 
   return (
-    <View style={{ padding: 20 }}>
-      <Text>Register</Text>
-      <TextInput placeholder="Email" onChangeText={setEmail} />
-      <TextInput placeholder="Password" secureTextEntry onChangeText={setPassword} />
-      <TextInput placeholder="Role (admin/user)" onChangeText={setRole} />
-      <Button title="Register" onPress={handleRegister} />
-    </View>
+    <SafeAreaView style={styles.container}>
+      <Image 
+        source={images.backgroundTop}
+        style={styles.bgTop}
+        resizeMode='contain'
+      />
+
+       <Image 
+        source={images.logo}
+        style={styles.imageLogo}
+        resizeMode='contain'
+      />
+      <Text style={styles.title}>Sign Up</Text>
+
+      <View style={styles.inputMainContainer}>
+        <Text style={styles.label}>Email address</Text>
+        <View 
+          style={[
+            styles.inputContainer,
+            isFocusedEmail && styles.inputContainerFocused
+          ]}
+        >
+          <TextInput 
+            placeholder="Enter email" 
+            onChangeText={setEmail} 
+            style={styles.input}
+            onFocus={() => setIsFocusedEmail(true)} 
+            onBlur={() => setIsFocusedEmail(false)} 
+          />
+        </View>
+      </View>
+      
+      <View style={styles.inputMainContainer}>
+        <Text style={styles.label}>Password</Text>
+        <View 
+          style={[
+            styles.inputContainer,
+            isFocusedPassword && styles.inputContainerFocused
+          ]}
+        >
+          <TextInput 
+            placeholder="Enter password" 
+            onFocus={() => setIsFocusedPassword(true)} 
+            onBlur={() => setIsFocusedPassword(false)} 
+            secureTextEntry={!showPassword} 
+            value={password} 
+            onChangeText={setPassword} 
+            style={styles.input}
+          />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons
+              name={`${!showPassword ? 'eye-off-outline' : "eye-outline"}`}
+              size={28}
+              color='blue'
+            />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={styles.inputMainContainer}>
+        <Text style={styles.label}>Confirm Password</Text>
+        <View style={[styles.inputContainer, isFocusedConfirmPassword && styles.inputContainerFocused]}>
+          <TextInput
+            placeholder="Confirm password"
+            onFocus={() => setIsFocusedConfirmPassword(true)}
+            onBlur={() => setIsFocusedConfirmPassword(false)}
+            secureTextEntry={!showConfirmPassword}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            style={styles.input}
+          />
+          <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+            <Ionicons
+              name={`${!showConfirmPassword ? 'eye-off-outline' : "eye-outline"}`}
+              size={28}
+              color='blue'
+            />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <TouchableOpacity onPress={handleRegister} style={styles.registerButton}>
+        <Text style={styles.buttonText}>Sign Up</Text>
+      </TouchableOpacity>
+
+      <View style={styles.registerContainer}>
+        <Text style={styles.registerText}>Already have an account? </Text>
+        <TouchableOpacity onPress={() => router.push('/auth/login')}>
+          <Text style={styles.registerButtonText}>Sign In</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Image 
+        source={images.backgroundBottom}
+        style={styles.bgBottom}
+        resizeMode='contain'
+      />
+
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+    backgroundColor: '#eaeaea',
+    position: 'relative'
+  },
+  bgTop:{
+    position: 'absolute',
+    width: '100%',
+    top: 0
+  },
+  bgBottom:{
+    position: 'absolute',
+    width: width,
+    bottom: -30,
+    zIndex: -10
+  },
+  imageLogo: {
+    marginHorizontal: 'auto'
+  },
+  title: {
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 50,
+    textAlign: 'center'
+  },
+  label: {
+    fontFamily: 'Poppins-Medium',
+    fontSize: 16,
+    marginBottom: 8,
+    color: '#333',
+  },
+  inputMainContainer:{
+    width: '100%',
+    height: 'auto',
+    marginVertical: 10
+  },
+  input : {
+    flex : 1,
+    fontFamily: 'Poppins-Regular'
+  },
+  inputContainer: {
+    width: '100%',
+    height: 64,
+    paddingHorizontal: 16,
+    borderWidth: 2,
+    borderColor: '#a1a2a8',
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  inputContainerFocused: {
+    borderColor: '#3B82F6',
+  },
+  forgetText: {
+    fontFamily: 'Poppins-Light',
+    color: 'blue'
+  },
+  registerButton:{
+    width: '70%',
+    backgroundColor: '#c6c6c6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderRadius: 30,
+    marginHorizontal: 'auto',
+    marginTop: 16,
+    borderWidth: 2,
+    borderColor: '#a1a2a8',
+  },
+  buttonText: {
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 20,
+    color: 'white'
+  },
+
+  registerContainer:{
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 50
+  },
+  registerText: {
+    fontFamily: 'Poppins-Light'
+  },
+  registerButtonText: {
+    fontFamily: 'Poppins-SemiBold',
+    color: 'blue'
+  }
+});
+
+export default Register;
