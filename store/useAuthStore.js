@@ -1,16 +1,15 @@
 import { create } from 'zustand';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth, db } from '../firebase';
+import { auth, firestoreDB } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
 export const useAuthStore = create((set) => {
   let unsubscribeAuth = null;
-
-  // Start auth listener
+  
   const startAuthListener = () => {
     unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const docSnap = await getDoc(doc(db, 'users', user.uid));
+        const docSnap = await getDoc(doc(firestoreDB, 'users', user.uid));
         const role = docSnap.exists() ? docSnap.data().role : null;
         set({ user, role, loading: false });
       } else {

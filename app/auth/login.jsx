@@ -5,7 +5,8 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../firebase';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { images } from '../../constants'
+import { images } from '../../constants';
+import { useAuthStore } from '../../store/useAuthStore';
 
 const { width } = Dimensions.get('window');
 
@@ -16,12 +17,27 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isFocusedEmail, setIsFocusedEmail] = useState(false);
   const [isFocusedPassword, setIsFocusedPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
+  const { user, setUser } = useAuthStore();
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      alert('Please fill in both fields.');
+      return;
+    }
+  
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      setLoading(true);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      setUser(userCredential.user);
     } catch (e) {
-      alert('Login failed');
+      alert(e.code === 'auth/network-request-failed'
+        ? 'Network error. Please check your internet connection.'
+        : 'Invalid email or password'
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -50,6 +66,7 @@ const Login = () => {
         >
           <TextInput 
             placeholder="Enter email" 
+            value={email}
             onChangeText={setEmail} 
             style={styles.input}
             onFocus={() => setIsFocusedEmail(true)} 
@@ -89,8 +106,8 @@ const Login = () => {
         <Text style={styles.forgetText}>Forget Password?</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={handleLogin} style={styles.loginButton}>
-        <Text style={styles.buttonText}>Sign In</Text>
+      <TouchableOpacity onPress={handleLogin} style={styles.loginButton} disabled={loading}>
+        <Text style={styles.buttonText}>{loading ? 'Signing in...' : 'Sign In'}</Text>
       </TouchableOpacity>
 
       <View style={styles.registerContainer}>

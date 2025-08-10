@@ -31,10 +31,6 @@ export default function Layout() {
     }
   }, [fontsLoaded, error]);
 
-  if (!fontsLoaded && !error) {
-    return null;
-  }
-
   useEffect(() => {
     setHasMounted(true);
   }, []);
@@ -57,6 +53,10 @@ export default function Layout() {
       }
     }
   }, [segments, user, role, loading, hasMounted]);
+
+  if (!fontsLoaded && !error) {
+    return null;
+  }
 
   if (loading || !hasMounted) {
     return (
