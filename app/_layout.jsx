@@ -4,6 +4,8 @@ import { useAuthStore } from '../store/useAuthStore';
 import { ActivityIndicator, View } from 'react-native';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Notifications from 'expo-notifications';
+import { usePushNotification } from '../utils/useNotification';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,6 +27,23 @@ export default function Layout() {
     "Poppins-Thin": require("../assets/fonts/Poppins-Thin.ttf"),
   });
 
+  // ✅ Grab push notification utils
+  const { registerAndStorePushToken, expoPushToken } = usePushNotification();
+
+  // Notification listener (only once)
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const { temperature } = response.notification.request.content.data;
+        if (temperature) {
+          console.log(`🌡️ Received push notification with temperature: ${temperature}`);
+        }
+      }
+    );
+
+    return () => subscription.remove();
+  }, []);
+
   useEffect(() => {
     if (fontsLoaded || error) {
       SplashScreen.hideAsync();
@@ -35,6 +54,7 @@ export default function Layout() {
     setHasMounted(true);
   }, []);
 
+  // ✅ Handle auth & token registration
   useEffect(() => {
     if (!hasMounted || loading) return;
 
@@ -51,6 +71,9 @@ export default function Layout() {
         if (role === 'admin' && !inAdminRoute) router.replace('/(admin)');
         if (role === 'user' && !inUserRoute) router.replace('/(user)');
       }
+    }
+    if (user) {
+      registerAndStorePushToken();
     }
   }, [segments, user, role, loading, hasMounted]);
 

@@ -6,5 +6,6 @@ import humidIcon from "../assets/images/humidity.png";
 import nectarIcon from "../assets/images/nectar.png";
 import lightIcon from "../assets/images/light.png";
 import reflectedButterfly from "../assets/images/reflected-butterfly.png";
+import userIcon from  "../assets/images/profile-user.png";
 
-export default { logo, backgroundTop, backgroundBottom, tempIcon, humidIcon, nectarIcon, lightIcon, reflectedButterfly };
+export default { logo, backgroundTop, backgroundBottom, tempIcon, humidIcon, nectarIcon, lightIcon, reflectedButterfly, userIcon };

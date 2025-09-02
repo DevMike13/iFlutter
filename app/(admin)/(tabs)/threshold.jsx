@@ -701,12 +701,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    gap: 12
   },
   switchContainer:{
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 20
+    // marginBottom: 10
   },
   switch: {
     transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }]
