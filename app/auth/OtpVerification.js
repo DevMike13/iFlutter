@@ -25,8 +25,13 @@ const OtpScreen = () => {
 
     setLoading(true);
     try {
+      // const response = await axios.post(
+      //   "https://asia-southeast1-iflutter-e9337.cloudfunctions.net/verifyOtp",
+      //   { email: user?.email, otp }
+      // );
+
       const response = await axios.post(
-        "https://asia-southeast1-iflutter-e9337.cloudfunctions.net/verifyOtp",
+        "https://verifyotp-jhhe3b5kca-as.a.run.app",
         { email: user?.email, otp }
       );
 
@@ -48,8 +53,15 @@ const OtpScreen = () => {
   };
 
   const handleResendOtp = async () => {
+    // try {
+    //   await axios.post("https://asia-southeast1-iflutter-e9337.cloudfunctions.net/sendOtp", { email: user?.email });
+    //   Alert.alert("OTP Sent", "A new OTP has been sent to your email.");
+    // } catch (error) {
+    //   console.error("Resend OTP error:", error);
+    //   Alert.alert("Error", "Failed to resend OTP. Please try again later.");
+    // }
     try {
-      await axios.post("https://asia-southeast1-iflutter-e9337.cloudfunctions.net/sendOtp", { email: user?.email });
+      await axios.post("https://sendotp-jhhe3b5kca-as.a.run.app", { email: user?.email });
       Alert.alert("OTP Sent", "A new OTP has been sent to your email.");
     } catch (error) {
       console.error("Resend OTP error:", error);

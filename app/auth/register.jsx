@@ -84,8 +84,15 @@ const Register = () => {
       });
       console.log('User document created successfully in Firestore');
 
+      // try {
+      //   await axios.post('https://asia-southeast1-iflutter-e9337.cloudfunctions.net/sendOtp', { email });
+      // } catch (otpError) {
+      //   console.error('Error sending OTP:', otpError);
+      //   Alert.alert('Error', 'Failed to send OTP. Please try again later.');
+      // }
+
       try {
-        await axios.post('https://asia-southeast1-iflutter-e9337.cloudfunctions.net/sendOtp', { email });
+        await axios.post('https://sendotp-jhhe3b5kca-as.a.run.app', { email });
       } catch (otpError) {
         console.error('Error sending OTP:', otpError);
         Alert.alert('Error', 'Failed to send OTP. Please try again later.');
