@@ -61,17 +61,43 @@ export default function Layout() {
     const inPublicRoute = segments[0] === null || segments[0] === 'auth';
     const inAdminRoute = segments[0] === '(admin)';
     const inUserRoute = segments[0] === '(user)';
+    const inPendingRoute = segments[0] === 'pending';
+    const inOtpRoute = segments[0] === 'auth' && segments[1] === 'otp';
+
+    const { isAccepted, isVerified, justLoggedIn, role } = useAuthStore.getState();
 
     if (!user && !inPublicRoute) {
       router.replace('/auth/login');
-    } else if (user && role) {
-      if (inPublicRoute) {
+      return;
+    }
+
+    if (user && !isVerified) {
+      if (justLoggedIn) {
+        Alert.alert('Email Verification', 'Please verify your email first.');
+        useAuthStore.setState({ justLoggedIn: false });
+      }
+      if (!inOtpRoute) router.replace('/auth/OtpVerification');
+      return;
+    }
+
+    if (user && isVerified && !isAccepted) {
+      if (justLoggedIn) {
+        Alert.alert('Pending Approval', 'Your account is awaiting admin approval.');
+        useAuthStore.setState({ justLoggedIn: false });
+      }
+      if (!inPendingRoute) router.replace('/auth/pending');
+      return;
+    }
+
+    if (user && role) {
+      if (inPublicRoute || inPendingRoute || inOtpRoute) {
         router.replace(role === 'admin' ? '/(admin)' : '/(user)');
       } else {
         if (role === 'admin' && !inAdminRoute) router.replace('/(admin)');
-        if (role === 'user' && !inUserRoute) router.replace('/(user)');
+        if (role === 'staff' && !inUserRoute) router.replace('/(user)');
       }
     }
+
     if (user) {
       registerAndStorePushToken();
     }

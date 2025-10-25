@@ -1,12 +1,14 @@
 import { View, TextInput, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, firestoreDB } from '../../firebase';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { images } from '../../constants';
 import { useAuthStore } from '../../store/useAuthStore';
+import axios from "axios";
 
 const { width } = Dimensions.get('window');
 
@@ -21,21 +23,57 @@ const Login = () => {
   
   const { user, setUser } = useAuthStore();
 
+
   const handleLogin = async () => {
-    if (!email || !password) {
-      alert('Please fill in both fields.');
-      return;
-    }
+    if (!email || !password) return alert('Please fill in both fields.');
   
     try {
       setLoading(true);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      setUser(userCredential.user);
+      const firebaseUser = userCredential.user;
+  
+      const userRef = doc(firestoreDB, 'users', firebaseUser.uid);
+      const userSnap = await getDoc(userRef);
+  
+      if (!userSnap.exists()) {
+        Alert.alert('Error', 'User record not found in Firestore.');
+        return;
+      }
+  
+      const userData = userSnap.data();
+  
+      setUser(firebaseUser, userData.role, userData.isAccepted, userData.isVerified);
+
+      if (!userData.isVerified) {
+        setUser(firebaseUser, userData.role, userData.isAccepted, false);
+
+        await axios.post(
+          "https://asia-southeast1-iflutter-e9337.cloudfunctions.net/sendOtp",
+          { email: firebaseUser.email }
+        );
+
+        // router.replace('/auth/OtpVerification');
+        return;
+      }
+  
+      if (!userData.isAccepted) {
+        alert('Pending Approval', 'Your account is awaiting admin approval.');
+        router.replace('/auth/pending');
+        return;
+      }
+  
+      if (userData.role === 'admin') router.replace('/(admin)');
+      else router.replace('/(user)');
+  
     } catch (e) {
-      alert(e.code === 'auth/network-request-failed'
-        ? 'Network error. Please check your internet connection.'
-        : 'Invalid email or password'
-      );
+      console.log('Login error:', e); 
+      if (e.code === 'auth/network-request-failed') {
+        alert('Network error. Please check your internet connection.');
+      } else if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') {
+        alert('Invalid email or password');
+      } else {
+        // alert('Something went wrong. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -105,6 +143,15 @@ const Login = () => {
       <TouchableOpacity>
         <Text style={styles.forgetText}>Forget Password?</Text>
       </TouchableOpacity>
+      
+      {/* <TouchableOpacity onPress={() => router.push('/auth/verification')}>
+        <Text style={styles.forgetText}>Verify</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => router.push('/auth/pending')}>
+        <Text style={styles.forgetText}>Pending</Text>
+      </TouchableOpacity> */}
+
 
       <TouchableOpacity onPress={handleLogin} style={styles.loginButton} disabled={loading}>
         <Text style={styles.buttonText}>{loading ? 'Signing in...' : 'Sign In'}</Text>

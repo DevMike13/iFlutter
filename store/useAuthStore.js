@@ -9,11 +9,53 @@ export const useAuthStore = create((set) => {
   const startAuthListener = () => {
     unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const docSnap = await getDoc(doc(firestoreDB, 'users', user.uid));
-        const role = docSnap.exists() ? docSnap.data().role : null;
-        set({ user, role, loading: false });
+        try {
+          const docRef = doc(firestoreDB, 'users', user.uid);
+          const docSnap = await getDoc(docRef);
+
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+
+            set({
+              user,
+              role: data.role || null,
+              isAccepted: data.isAccepted ?? false,
+              // ✅ use Firestore's isVerified instead of emailVerified
+              isVerified: data.isVerified ?? false,
+              loading: false,
+              justLoggedIn: false,
+            });
+          } else {
+            // User logged in but no Firestore doc yet
+            set({
+              user,
+              role: null,
+              isAccepted: false,
+              isVerified: false,
+              loading: false,
+              justLoggedIn: false,
+            });
+          }
+        } catch (error) {
+          console.error("❌ Error fetching user data:", error);
+          set({
+            user,
+            role: null,
+            isAccepted: false,
+            isVerified: false,
+            loading: false,
+            justLoggedIn: false,
+          });
+        }
       } else {
-        set({ user: null, role: null, loading: false });
+        set({
+          user: null,
+          role: null,
+          isAccepted: false,
+          isVerified: false,
+          loading: false,
+          justLoggedIn: false,
+        });
       }
     });
   };
@@ -23,11 +65,14 @@ export const useAuthStore = create((set) => {
   return {
     user: null,
     role: null,
+    isAccepted: false,
+    isVerified: false,
     loading: true,
-    setUser: (user, role) => set({ user, role }),
+    justLoggedIn: false,
+    setUser: (user, role, isAccepted = false, isVerified = false, justLoggedIn = false) => set({ user, role, isAccepted, isVerified, justLoggedIn }),
     logout: async () => {
       await signOut(auth);
-      set({ user: null, role: null, loading: false });
+      set({ user: null, role: null, isAccepted: false, isVerified: false, loading: false, justLoggedIn: false });
     },
   };
 });

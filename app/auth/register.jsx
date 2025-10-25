@@ -1,4 +1,4 @@
-import { View, TextInput, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Alert } from 'react-native';
+import { View, TextInput, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Alert, FlatList } from 'react-native';
 import { useState, useEffect } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'expo-router';
@@ -7,11 +7,14 @@ import { auth, firestoreDB } from '../../firebase';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { images } from '../../constants';
+import axios from 'axios';
 
 const { width } = Dimensions.get('window');
+const roles = ['Admin', 'Staff'];
 
 const Register = () => {
   const router = useRouter();
+  const [activeRole, setActiveRole] = useState(roles[0]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -22,16 +25,6 @@ const Register = () => {
   const [isFocusedConfirmPassword, setIsFocusedConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const role = 'admin';
-
-  // Debug: Check if Firebase is properly initialized
-  useEffect(() => {
-    console.log('=== FIREBASE DEBUG INFO ===');
-    console.log('Auth object:', auth);
-    console.log('FirestoreDB object:', firestoreDB);
-    console.log('Auth app:', auth?.app);
-    console.log('Auth currentUser:', auth?.currentUser);
-  }, []);
 
   const handleRegister = async () => {
     console.log('=== REGISTRATION ATTEMPT ===');
@@ -80,33 +73,29 @@ const Register = () => {
       console.log('Creating user with Firebase Auth...');
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
       console.log('User created successfully:', userCred.user.uid);
-      console.log('User email:', userCred.user.email);
 
       console.log('Creating user document in Firestore...');
       await setDoc(doc(firestoreDB, 'users', userCred.user.uid), { 
-        role,
+        role: activeRole.toLowerCase(),
         email: email,
+        isAccepted: false,
+        isVerified: false,
         createdAt: new Date().toISOString()
       });
       console.log('User document created successfully in Firestore');
 
-      Alert.alert("Success", "Registration successful!", [
-        { text: "OK", onPress: () => {
-          // Navigate to your next screen
-          // router.push('/your-next-screen');
-        }}
-      ]);
+      try {
+        await axios.post('https://asia-southeast1-iflutter-e9337.cloudfunctions.net/sendOtp', { email });
+      } catch (otpError) {
+        console.error('Error sending OTP:', otpError);
+        Alert.alert('Error', 'Failed to send OTP. Please try again later.');
+      }
 
     } catch (error) {
-      // Log full error details for debugging (only visible in console)
       console.log('=== REGISTRATION ERROR ===');
-      // console.error('Full error object:', error);
-      // console.error('Error code:', error.code);
-      // console.error('Error message:', error.message);
-
+    
       let errorMessage = 'Registration failed.';
       
-      // Handle specific Firebase errors
       if (error.code) {
         switch (error.code) {
           case 'auth/email-already-in-use':
@@ -155,6 +144,27 @@ const Register = () => {
         resizeMode='contain'
       />
       <Text style={styles.title}>Sign Up</Text>
+      <View style={styles.tabContainer}>
+        {roles.map((item) => (
+          <TouchableOpacity
+            key={item}
+            onPress={() => setActiveRole(item)}
+            style={[
+              styles.tabButton,
+              activeRole === item ? styles.activeTabButton : styles.inactiveTabButton,
+            ]}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeRole === item ? styles.activeTabText : styles.inactiveTabText,
+              ]}
+            >
+              {item}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
       <View style={styles.inputMainContainer}>
         <Text style={styles.label}>Email address</Text>
@@ -286,7 +296,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'Poppins-SemiBold',
-    fontSize: 50,
+    fontSize: 30,
     textAlign: 'center'
   },
   label: {
@@ -361,7 +371,44 @@ const styles = StyleSheet.create({
   registerButtonText: {
     fontFamily: 'Poppins-SemiBold',
     color: 'blue'
-  }
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#c4c4c4',
+    borderRadius: 999,
+    overflow: 'hidden',
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  
+  activeTabButton: {
+    backgroundColor: '#19354d',
+  },
+  
+  inactiveTabButton: {
+    backgroundColor: '#c4c4c4',
+  },
+  
+  tabText: {
+    fontSize: 18,
+    fontFamily: 'Poppins-Regular',
+    textAlign: 'center',
+  },
+  
+  activeTabText: {
+    color: '#ffffff',
+    fontFamily: 'Poppins-SemiBold',
+  },
+  
+  inactiveTabText: {
+    color: '#6b7280',
+  },
 });
 
 export default Register;
