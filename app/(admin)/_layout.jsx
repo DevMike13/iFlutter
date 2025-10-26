@@ -11,7 +11,6 @@ import {
 import { firestoreDB } from '../../firebase';
 import { Text, View, StyleSheet, Image, TouchableOpacity, FlatList } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-
 import { images } from '../../constants';
 
 export default function AdminTabsLayout() {
@@ -52,7 +51,6 @@ export default function AdminTabsLayout() {
   
     await batch.commit();
   };
-  
 
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
@@ -71,13 +69,12 @@ export default function AdminTabsLayout() {
       })
     );
   };
-  
+
   const NotificationDropdown = () => {
     if (!showDropdown) return null;
-
     return (
       <View style={styles.dropdown}>
-        <Text style={styles.dropdownHeaderText}>Notifications:</Text>
+        <Text style={styles.dropdownHeaderText}>Notifications</Text>
         {notifications.length > 0 ? (
           <FlatList
             data={notifications}
@@ -90,9 +87,6 @@ export default function AdminTabsLayout() {
                     !item.isViewed && styles.unreadText,
                   ]}
                 >
-                  {item.notifType === 'alert' && '⚠️ '}
-                  {item.notifType === 'info' && 'ℹ️ '}
-                  {item.notifType === 'success' && '✅ '}
                   {item.content}
                 </Text>
                 <Text style={styles.dateText}>{formatDate(item.date)}</Text>
@@ -110,12 +104,28 @@ export default function AdminTabsLayout() {
     <Tabs
       screenOptions={{
         tabBarStyle: {
-          borderTopColor: '#c4c4c4',
-          backgroundColor: '#c4c4c4',
-          height: 100,
+          position: 'absolute',
+          backgroundColor: '#fff',
+          borderTopWidth: 0,
+          elevation: 5,
+          height: 70,
+          marginHorizontal: 20,
+          marginBottom:50,
+          borderRadius: 60,
+          shadowColor: '#000',
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
         },
+        tabBarShowLabel: false,
         headerStyle: {
-          backgroundColor: '#c4c4c4',
+          backgroundColor: '#fff',
+          elevation: 0,
+          shadowOpacity: 0,
+        },
+        tabBarItemStyle: {
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingVertical: 20, // helps center vertically
         },
         headerShown: true,
         headerTitle: '',
@@ -134,19 +144,15 @@ export default function AdminTabsLayout() {
             <TouchableOpacity
               onPress={() => {
                 setShowDropdown(!showDropdown);
-                if (!showDropdown) {
-                  markNotificationsAsViewed();
-                }
+                if (!showDropdown) markNotificationsAsViewed();
               }}
               style={styles.notificationButton}
             >
               <View style={styles.notificationContainer}>
-                <Ionicons name="notifications-outline" size={28} color="#000" />
+                <Ionicons name="notifications-outline" size={26} color="#333" />
                 {unreadCount > 0 && (
                   <View style={styles.notificationCountContainer}>
-                    <Text style={styles.notificationCountText}>
-                      {unreadCount}
-                    </Text>
+                    <Text style={styles.notificationCountText}>{unreadCount}</Text>
                   </View>
                 )}
               </View>
@@ -159,150 +165,141 @@ export default function AdminTabsLayout() {
       <Tabs.Screen
         name="(tabs)/index"
         options={{
-          title: 'Home',
-          tabBarLabel: ({ focused }) => (
-            <Text style={{ fontWeight: focused ? '700' : '400', fontSize: 11, color: focused ? 'blue' : 'gray' }}>
-              {/* Grades */}
-            </Text>
-          ),
-          tabBarIcon: ({ focused, color, size }) => (
-            <Ionicons name={focused ? 'home' : 'home-outline'} size={30} color={focused ? 'blue' : 'gray'} />
+          tabBarIcon: ({ focused }) => (
+            <Ionicons
+              name={focused ? 'home' : 'home-outline'}
+              size={26}
+              color={focused ? '#007AFF' : '#999'}
+            />
           ),
         }}
       />
-
       <Tabs.Screen
         name="(tabs)/threshold"
         options={{
-          title: 'Threshold',
-          tabBarLabel: ({ focused }) => (
-            <Text style={{ fontWeight: focused ? '700' : '400', fontSize: 11, color: focused ? 'blue' : 'gray' }}>
-              {/* Threshold */}
-            </Text>
-          ),
           tabBarIcon: ({ focused }) => (
-            <Ionicons name={focused ? 'stats-chart' : 'stats-chart-outline'} size={30} color={focused ? 'blue' : 'gray'} />
+            <Ionicons
+              name={focused ? 'stats-chart' : 'stats-chart-outline'}
+              size={26}
+              color={focused ? '#007AFF' : '#999'}
+            />
           ),
         }}
       />
-
       <Tabs.Screen
         name="(tabs)/butterfly"
         options={{
-          title: 'butterfly',
-          tabBarLabel: ({ focused }) => (
-            <Text style={{ fontWeight: focused ? '700' : '400', fontSize: 11, color: focused ? 'blue' : 'gray' }}>
-              {/* Student Info */}
-            </Text>
-          ),
           tabBarIcon: ({ focused }) => (
-            <MaterialCommunityIcons name="butterfly" size={30} color={focused ? 'blue' : 'gray'} />
+            <MaterialCommunityIcons
+              name="butterfly"
+              size={26}
+              color={focused ? '#007AFF' : '#999'}
+            />
           ),
         }}
       />
-
       <Tabs.Screen
         name="(tabs)/about"
         options={{
-          title: 'About',
-          tabBarLabel: ({ focused }) => (
-            <Text style={{ fontWeight: focused ? '700' : '400', fontSize: 11, color: focused ? 'blue' : 'gray' }}>
-              {/* Registration */}
-            </Text>
-          ),
           tabBarIcon: ({ focused }) => (
-            <Ionicons name={focused ? 'information-circle' : 'information-circle-outline'} size={30} color={focused ? 'blue' : 'gray'} />
+            <Ionicons
+              name={focused ? 'information-circle' : 'information-circle-outline'}
+              size={26}
+              color={focused ? '#007AFF' : '#999'}
+            />
           ),
         }}
       />
-
       <Tabs.Screen
         name="(tabs)/menu"
         options={{
-          title: 'Menu',
-          tabBarLabel: ({ focused }) => (
-            <Text style={{ fontWeight: focused ? '700' : '400', fontSize: 11, color: focused ? 'blue' : 'gray' }}>
-              {/* Profile */}
-            </Text>
-          ),
           tabBarIcon: ({ focused }) => (
-            <Ionicons name={focused ? 'menu' : 'menu-outline'} size={30} color={focused ? 'blue' : 'gray'} />
+            <Ionicons
+              name={focused ? 'menu' : 'menu-outline'}
+              size={26}
+              color={focused ? '#007AFF' : '#999'}
+            />
           ),
         }}
       />
     </Tabs>
   );
 }
+
 const styles = StyleSheet.create({
-  headerContainer:{
-    display: 'flex',
+  headerContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 10
+    marginLeft: 10,
   },
   imageLogo: {
-    width: 40,
-    height: 40
+    width: 36,
+    height: 36,
   },
-  appNameText:{
-    fontFamily: 'Poppins-Regular',
-    fontSize: 18
+  appNameText: {
+    fontFamily: 'Poppins-Medium',
+    fontSize: 18,
+    marginLeft: 6,
+    color: '#333',
   },
-  notificationButton:{
-    marginRight: 16
+  notificationButton: {
+    marginRight: 16,
   },
-  notificationContainer:{
-    position: 'relative'
+  notificationContainer: {
+    position: 'relative',
   },
-  notificationCountContainer:{
+  notificationCountContainer: {
     position: 'absolute',
     top: -4,
-    right: -4,
-    backgroundColor: 'red',
-    borderRadius: 8,
-    paddingHorizontal: 4,
-    paddingVertical: 1,
+    right: -6,
+    backgroundColor: '#FF3B30',
+    borderRadius: 10,
+    paddingHorizontal: 5,
     minWidth: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  notificationCountText:{
-    color: '#fff', 
-    fontSize: 10
+  notificationCountText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
   dropdown: {
     position: 'absolute',
     top: 35,
-    right: 20,
-    backgroundColor: '#9b9b9b',
-    borderRadius: 6,
-    elevation: 5,
-    padding: 8,
+    right: 10,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 10,
     width: 300,
     maxHeight: 300,
-    zIndex: 999,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 6,
   },
-  dropdownHeaderText:{
-    fontSize: 16, 
-    color: '#000',
-    fontFamily: 'Poppins-Bold',
+  dropdownHeaderText: {
+    fontSize: 16,
+    fontFamily: 'Poppins-SemiBold',
+    color: '#111',
+    marginBottom: 6,
   },
   dropdownItem: {
-    padding: 6,
-    borderWidth: 0.5,
-    borderColor: '#ccc',
-    borderRadius: 10,
-    paddingHorizontal: 10
+    paddingVertical: 8,
+    borderBottomWidth: 0.5,
+    borderColor: '#ddd',
   },
-  dropdownText: { 
-    fontSize: 16, 
-    color: '#000',
+  dropdownText: {
+    fontSize: 14,
+    color: '#333',
     fontFamily: 'Poppins-Regular',
   },
-  dateText:{
-    fontFamily: 'Poppins-Regular',
+  unreadText: {
+    fontWeight: '600',
+  },
+  dateText: {
+    fontSize: 12,
+    color: '#666',
     textAlign: 'right',
-    color: 'blue'
-  }
-})
+  },
+});

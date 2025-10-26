@@ -47,11 +47,6 @@ const Login = () => {
       if (!userData.isVerified) {
         setUser(firebaseUser, userData.role, userData.isAccepted, false);
 
-        // await axios.post(
-        //   "https://asia-southeast1-iflutter-e9337.cloudfunctions.net/sendOtp",
-        //   { email: firebaseUser.email }
-        // );
-
         await axios.post(
           "https://sendotp-jhhe3b5kca-as.a.run.app",
           { email: firebaseUser.email }
