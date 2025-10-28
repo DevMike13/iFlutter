@@ -456,32 +456,25 @@ const ThresholdScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.tabContainer}>
-        <FlatList
-          data={tabList}
-          horizontal
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => setActiveTab(item)}
+        {tabList.map((item) => (
+          <TouchableOpacity
+            key={item}
+            onPress={() => setActiveTab(item)}
+            style={[
+              styles.tabButton,
+              activeTab === item ? styles.activeTabButton : styles.inactiveTabButton,
+            ]}
+          >
+            <Text
               style={[
-                styles.tabButton,
-                { width: width / 2 - 8 },
-                activeTab === item ? styles.activeTabButton : styles.inactiveTabButton
+                styles.tabText,
+                activeTab === item ? styles.activeTabText : styles.inactiveTabText,
               ]}
             >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === item ? styles.activeTabText : styles.inactiveTabText
-                ]}
-              >
-                {item}
-              </Text>
-            </TouchableOpacity>
-          )}
-          showsHorizontalScrollIndicator={false}
-          style={styles.flatList}
-        />
+              {item}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       <ScrollView 
@@ -710,41 +703,44 @@ export default ThresholdScreen
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#c4c4c4',
+    // backgroundColor: '#c4c4c4',
     // backgroundColor: 'blue'
   },
   tabContainer: {
-    width: '100%',
+    flexDirection: 'row',
     backgroundColor: '#c4c4c4',
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    marginBottom: 5,
-    marginTop: -5
-  },
-  flatList: {
-    borderRadius: 999,
+    borderRadius: 40,
+    marginHorizontal: 20,
+    overflow: 'hidden',
+    // marginBottom: 10,
+    // marginTop: 10,
   },
   tabButton: {
-    paddingVertical: 7,
-    paddingHorizontal: 24,
-    borderRadius: 999,
-    marginRight: 4,
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  
   activeTabButton: {
     backgroundColor: '#19354d',
   },
+  
   inactiveTabButton: {
     backgroundColor: '#c4c4c4',
   },
+  
   tabText: {
     fontSize: 18,
     fontFamily: 'Poppins-Regular',
     textAlign: 'center',
   },
+  
   activeTabText: {
     color: '#ffffff',
     fontFamily: 'Poppins-SemiBold',
   },
+  
   inactiveTabText: {
     color: '#6b7280',
   },
@@ -761,7 +757,7 @@ const styles = StyleSheet.create({
     height: 'auto',
     padding: 10,
     borderRadius: 20,
-    backgroundColor: '#c4c4c4'
+    // backgroundColor: '#c4c4c4'
   },
   contentTitle: {
     fontFamily: 'Poppins-SemiBold',

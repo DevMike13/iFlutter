@@ -1,8 +1,9 @@
-import { StyleSheet, Text, View, Image, ScrollView, FlatList, TouchableOpacity, Dimensions, Switch, Modal, TextInput } from 'react-native'
-import { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, Image, ScrollView, FlatList, TouchableOpacity, Dimensions, Switch, Modal, TextInput, Animated } from 'react-native'
+import { useEffect, useState, useRef } from 'react';
 import { ref, onValue, set } from 'firebase/database';
 import { realtimeDB } from '../../../firebase';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { images } from '../../../constants';
 
@@ -12,8 +13,14 @@ const tabList = ['Monitoring', 'Threshold'];
 
 const ThresholdScreen = () => {
   const [activeTab, setActiveTab] = useState(tabList[0]);
-  const [isEnabledControl, setIsEnabledControl] = useState(false);
-  const [isEnabledAuto, setIsEnabledAuto] = useState(false);
+  const [isEnabledManual, setIsEnabledManual] = useState(false);
+
+  const [isEnabledMisting, setIsEnabledMisting] = useState(false);
+  const [isEnabledHeating, setIsEnabledHeating] = useState(false);
+  const [isEnabledLighting, setIsEnabledLighting] = useState(false);
+
+  const [isExpanded, setIsExpanded] = useState(false);
+  const animation = useRef(new Animated.Value(0)).current;
 
   const [temperature, setTemperature] = useState(null);
   const [humidity, setHumidity] = useState(null);
@@ -36,6 +43,19 @@ const ThresholdScreen = () => {
   const [minNectar, setMinNectar] = useState('');
   const [maxNectar, setMaxNectar] = useState('');
 
+  const toggleAccordion = () => {
+    setIsExpanded(!isExpanded);
+    Animated.timing(animation, {
+      toValue: isExpanded ? 0 : 1,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const height = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 170],
+  });
 
   useEffect(() => {
     if (isTempModalVisible) {
@@ -107,32 +127,52 @@ const ThresholdScreen = () => {
     }
   };
   
-  const toggleControl = (value) => {
-    set(ref(realtimeDB, '/ManualControls/Control'), value ? 'ON' : 'OFF');
+  const toggleManual = (value) => {
+    set(ref(realtimeDB, '/ManualControls/Manual'), value ? 'ON' : 'OFF');
   };
-  
-  const toggleAuto = (value) => {
-    set(ref(realtimeDB, '/ManualControls/Auto'), value ? 'ON' : 'OFF');
+
+  const toggleMisting = (value) => {
+    set(ref(realtimeDB, '/ManualControls/Misting'), value ? 'ON' : 'OFF');
+  };
+
+  const toggleHeating = (value) => {
+    set(ref(realtimeDB, '/ManualControls/Heating'), value ? 'ON' : 'OFF');
+  };
+
+  const toggleLighting = (value) => {
+    set(ref(realtimeDB, '/ManualControls/Lighting'), value ? 'ON' : 'OFF');
   };
 
   useEffect(() => {
-    const controlRef = ref(realtimeDB, '/ManualControls/Control');
-    const autoRef = ref(realtimeDB, '/ManualControls/Auto');
+    const manualRef = ref(realtimeDB, '/ManualControls/Manual');
+    const mistingRef = ref(realtimeDB, '/ManualControls/Misting');
+    const heatingRef = ref(realtimeDB, '/ManualControls/Heating');
+    const lightingRef = ref(realtimeDB, '/ManualControls/Lighting');
 
-    const unsubControl = onValue(controlRef, (snapshot) => {
+    const unsubManual = onValue(manualRef, (snapshot) => {
       const value = snapshot.val();
-      setIsEnabledControl(value === 'ON');
+      setIsEnabledManual(value === 'ON');
     });
 
-    const unsubAuto = onValue(autoRef, (snapshot) => {
+    const unsubMisting = onValue(mistingRef, (snapshot) => {
       const value = snapshot.val();
-      setIsEnabledAuto(value === 'ON');
+      setIsEnabledMisting(value === 'ON');
+    });
+    const unsubHeating = onValue(heatingRef, (snapshot) => {
+      const value = snapshot.val();
+      setIsEnabledHeating(value === 'ON');
+    });
+    const unsubLighting = onValue(lightingRef, (snapshot) => {
+      const value = snapshot.val();
+      setIsEnabledLighting(value === 'ON');
     });
 
     // Cleanup listeners
     return () => {
-      unsubControl();
-      unsubAuto();
+      unsubManual();
+      unsubMisting();
+      unsubHeating();
+      unsubLighting();
     };
   }, []);
 
@@ -177,27 +217,67 @@ const ThresholdScreen = () => {
             <View style={styles.autoControlContainer}>
               <View style={styles.switchContainer}>
                 <Switch
-                  trackColor={{ isEnabledControl: '#767577', true: '#19354d' }}
-                  thumbColor={isEnabledControl ? 'white' : '#f4f3f4'}
+                  trackColor={{ isEnabledManual: '#767577', true: '#19354d' }}
+                  thumbColor={isEnabledManual ? 'white' : '#f4f3f4'}
                   ios_backgroundColor="#3e3e3e"
-                  onValueChange={toggleControl}
-                  value={isEnabledControl}
+                  onValueChange={toggleManual}
+                  value={isEnabledManual}
                   style={styles.switch}
                 />
-                <Text style={styles.switchText}>Control</Text>
+                <Text style={styles.switchText}>Manual Control</Text>
+                <TouchableOpacity onPress={toggleAccordion} style={styles.iconButton}>
+                  <Ionicons 
+                    name={isExpanded ? 'chevron-up' : 'chevron-down'} 
+                    size={22} 
+                    color="white" 
+                  />
+                </TouchableOpacity>
               </View>
-              
-              <View style={styles.switchContainer}>
-                <Switch
-                  trackColor={{ isEnabledAuto: '#767577', true: '#19354d' }}
-                  thumbColor={isEnabledAuto ? 'white' : '#f4f3f4'}
-                  ios_backgroundColor="#3e3e3e"
-                  onValueChange={toggleAuto}
-                  value={isEnabledAuto}
-                  style={styles.switch}
-                />
-                <Text style={styles.switchText}>Auto</Text>
-              </View>
+
+              <Animated.View style={[styles.accordionContent, { height }]}>
+                {isExpanded && (
+                  <View style={styles.innerContent}>
+                    {/* MISTING */}
+                    <View style={styles.subSwitchContainer}>
+                      <Text style={styles.subSwitchText}>Misting</Text>
+                      <Switch
+                        trackColor={{ isEnabledMisting: '#767577', true: '#19354d' }}
+                        thumbColor={isEnabledMisting ? 'white' : '#f4f3f4'}
+                        ios_backgroundColor="#3e3e3e"
+                        onValueChange={toggleMisting}
+                        value={isEnabledMisting}
+                        style={styles.switch}
+                      />
+                    </View>
+
+                    {/* Heating */}
+                    <View style={styles.subSwitchContainer}>
+                      <Text style={styles.subSwitchText}>Heating</Text>
+                      <Switch
+                        trackColor={{ isEnabledHeating: '#767577', true: '#19354d' }}
+                        thumbColor={isEnabledHeating ? 'white' : '#f4f3f4'}
+                        ios_backgroundColor="#3e3e3e"
+                        onValueChange={toggleHeating}
+                        value={isEnabledHeating}
+                        style={styles.switch}
+                      />
+                    </View>
+
+                     {/* Lighting */}
+                     <View style={styles.subSwitchContainer}>
+                      <Text style={styles.subSwitchText}>Lighting</Text>
+                      <Switch
+                        trackColor={{ isEnabledLighting: '#767577', true: '#19354d' }}
+                        thumbColor={isEnabledLighting ? 'white' : '#f4f3f4'}
+                        ios_backgroundColor="#3e3e3e"
+                        onValueChange={toggleLighting}
+                        value={isEnabledLighting}
+                        style={styles.switch}
+                      />
+                    </View>
+                  </View>
+                )}
+              </Animated.View>
             </View>
 
             <View style={styles.sensorMainContainer}>
@@ -376,39 +456,32 @@ const ThresholdScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.tabContainer}>
-        <FlatList
-          data={tabList}
-          horizontal
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => setActiveTab(item)}
+        {tabList.map((item) => (
+          <TouchableOpacity
+            key={item}
+            onPress={() => setActiveTab(item)}
+            style={[
+              styles.tabButton,
+              activeTab === item ? styles.activeTabButton : styles.inactiveTabButton,
+            ]}
+          >
+            <Text
               style={[
-                styles.tabButton,
-                { width: width / 2 - 8 },
-                activeTab === item ? styles.activeTabButton : styles.inactiveTabButton
+                styles.tabText,
+                activeTab === item ? styles.activeTabText : styles.inactiveTabText,
               ]}
             >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === item ? styles.activeTabText : styles.inactiveTabText
-                ]}
-              >
-                {item}
-              </Text>
-            </TouchableOpacity>
-          )}
-          showsHorizontalScrollIndicator={false}
-          style={styles.flatList}
-        />
+              {item}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       <ScrollView 
         style={{ flex: 1 }}
         contentContainerStyle={[
           styles.scrollContent,
-          { flexGrow: 1 } // Ensures it fills the screen height
+          { flexGrow: 1 }
         ]}
         showsVerticalScrollIndicator={false}
       >
@@ -630,41 +703,44 @@ export default ThresholdScreen
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#c4c4c4',
+    // backgroundColor: '#c4c4c4',
     // backgroundColor: 'blue'
   },
   tabContainer: {
-    width: '100%',
+    flexDirection: 'row',
     backgroundColor: '#c4c4c4',
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    marginBottom: 5,
-    marginTop: -5
-  },
-  flatList: {
-    borderRadius: 999,
+    borderRadius: 40,
+    marginHorizontal: 20,
+    overflow: 'hidden',
+    // marginBottom: 10,
+    // marginTop: 10,
   },
   tabButton: {
-    paddingVertical: 7,
-    paddingHorizontal: 24,
-    borderRadius: 999,
-    marginRight: 4,
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  
   activeTabButton: {
     backgroundColor: '#19354d',
   },
+  
   inactiveTabButton: {
     backgroundColor: '#c4c4c4',
   },
+  
   tabText: {
     fontSize: 18,
     fontFamily: 'Poppins-Regular',
     textAlign: 'center',
   },
+  
   activeTabText: {
     color: '#ffffff',
     fontFamily: 'Poppins-SemiBold',
   },
+  
   inactiveTabText: {
     color: '#6b7280',
   },
@@ -672,6 +748,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     // flex: 1,
     padding: 16,
+    paddingBottom: 50,
     flexGrow: 1
   },
   contentContainer: {
@@ -680,7 +757,7 @@ const styles = StyleSheet.create({
     height: 'auto',
     padding: 10,
     borderRadius: 20,
-    backgroundColor: '#c4c4c4'
+    // backgroundColor: '#c4c4c4'
   },
   contentTitle: {
     fontFamily: 'Poppins-SemiBold',
@@ -707,7 +784,9 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 20
+    gap: 20,
+    paddingTop: 10,
+    paddingBottom: 10
     // marginBottom: 10
   },
   switch: {
@@ -755,6 +834,45 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
     fontSize: 12,
     textAlign: 'center'
+  },
+
+  iconButton: {
+    marginLeft: 'auto'
+  },
+  accordionContent: {
+    overflow: 'hidden',
+    
+  },
+  innerContent: {
+    padding: 15,
+    borderTopWidth: 2,
+    borderColor: 'gray',
+  },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  optionText: {
+    fontSize: 15,
+    color: '#333',
+    marginLeft: 8,
+  },
+
+  subSwitchText:{
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 18,
+    marginBottom: -2
+  },
+
+  subSwitchContainer:{
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    gap: 20,
+    paddingTop: 10,
+    paddingBottom: 10
   },
 
   // MODAL

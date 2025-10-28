@@ -190,8 +190,13 @@ export default function AdminTabsLayout() {
         name="(tabs)/butterfly"
         options={{
           tabBarIcon: ({ focused }) => (
-            <MaterialCommunityIcons
-              name="butterfly"
+            // <MaterialCommunityIcons
+            //   name="butterfly"
+            //   size={26}
+            //   color={focused ? '#007AFF' : '#999'}
+            // />
+            <Ionicons
+              name={focused ? 'people' : 'people-outline'}
               size={26}
               color={focused ? '#007AFF' : '#999'}
             />

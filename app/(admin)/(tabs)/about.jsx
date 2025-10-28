@@ -61,7 +61,7 @@ export default AboutScreen
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#c4c4c4',
+    // backgroundColor: '#c4c4c4',
   },
   scrollContent: {
     padding: 16,
