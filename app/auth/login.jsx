@@ -1,7 +1,7 @@
-import { View, TextInput, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { View, TextInput, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, firestoreDB } from '../../firebase';
 import { useRouter } from 'expo-router';
@@ -22,7 +22,6 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   
   const { user, setUser } = useAuthStore();
-
 
   const handleLogin = async () => {
     if (!email || !password) return alert('Please fill in both fields.');
@@ -69,7 +68,7 @@ const Login = () => {
       console.log('Login error:', e); 
       if (e.code === 'auth/network-request-failed') {
         alert('Network error. Please check your internet connection.');
-      } else if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') {
+      } else if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') {
         alert('Invalid email or password');
       } else {
         // alert('Something went wrong. Please try again.');
@@ -140,9 +139,9 @@ const Login = () => {
         </View>
       </View>
 
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push('/auth/forgotPassword')}>
         <Text style={styles.forgetText}>Forget Password?</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> 
       
       {/* <TouchableOpacity onPress={() => router.push('/auth/verification')}>
         <Text style={styles.forgetText}>Verify</Text>

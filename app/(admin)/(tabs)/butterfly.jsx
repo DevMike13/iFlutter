@@ -10,6 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { firestoreDB, auth } from "../../../firebase";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import { deleteUser } from 'firebase/auth';
 import {
   collection,
@@ -76,10 +77,49 @@ export default function AccountListScreen() {
     await fetchAccounts(false);
   };
 
+  // const handleDelete = async (account) => {
+  //   if (account.email === "ifluttercapstone@gmail.com") return;
+  //   console.log(account.email.toLowerCase());
+  //   console.log(account.email);
+  //   Alert.alert(
+  //     "Delete Account",
+  //     `Are you sure you want to delete ${account.email}?`,
+  //     [
+  //       { text: "Cancel", style: "cancel" },
+  //       {
+  //         text: "Delete",
+  //         style: "destructive",
+  //         onPress: async () => {
+  //           try {
+  //             await deleteDoc(doc(firestoreDB, "users", account.id));
+  
+  //             await deleteDoc(doc(firestoreDB, "emailOtps", account.email.toLowerCase()));
+  
+  //             const currentUser = auth.currentUser;
+  //             if (currentUser && currentUser.uid === account.id) {
+  //               await deleteUser(currentUser);
+  //               console.log("✅ Deleted from Firebase Auth (current user)");
+  //             } else {
+  //               console.log("⚠️ Skipped Auth deletion — not current user");
+  //             }
+  
+  //             setAccounts((prev) => prev.filter((item) => item.id !== account.id));
+  
+  //             Alert.alert("Success", `${account.email} has been deleted.`);
+  //           } catch (err) {
+  //             console.error("❌ Error deleting account:", err);
+  //             Alert.alert("Error", "Failed to delete the account. Please try again.");
+  //           }
+  //         },
+  //       },
+  //     ]
+  //   );
+  // };
+  
+
   const handleDelete = async (account) => {
     if (account.email === "ifluttercapstone@gmail.com") return;
-    console.log(account.email.toLowerCase());
-    console.log(account.email);
+    console.log(account);
     Alert.alert(
       "Delete Account",
       `Are you sure you want to delete ${account.email}?`,
@@ -90,30 +130,35 @@ export default function AccountListScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              await deleteDoc(doc(firestoreDB, "users", account.id));
+              // Step 2: Call your Cloud Function endpoint
+              const response = await fetch("https://deleteuseraccount-jhhe3b5kca-as.a.run.app", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ uid: account.id }),
+              });
   
-              await deleteDoc(doc(firestoreDB, "emailOtps", account.email.toLowerCase()));
+              const result = await response.json();
   
-              const currentUser = auth.currentUser;
-              if (currentUser && currentUser.uid === account.id) {
-                await deleteUser(currentUser);
-                console.log("✅ Deleted from Firebase Auth (current user)");
-              } else {
-                console.log("⚠️ Skipped Auth deletion — not current user");
+              if (!result.success) {
+                throw new Error(result.message || "Failed to delete Auth user");
               }
-  
+              
+              await deleteDoc(doc(firestoreDB, "users", account.id));
+              await deleteDoc(doc(firestoreDB, "emailOtps", account.email.toLowerCase()));
+
+              // Step 3: Update UI
               setAccounts((prev) => prev.filter((item) => item.id !== account.id));
-  
               Alert.alert("Success", `${account.email} has been deleted.`);
             } catch (err) {
               console.error("❌ Error deleting account:", err);
-              Alert.alert("Error", "Failed to delete the account. Please try again.");
+              Alert.alert("Error", err.message || "Failed to delete the account.");
             }
           },
         },
       ]
     );
   };
+  
   
 
   const handleApprove = (account) => {
