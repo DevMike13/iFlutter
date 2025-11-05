@@ -61,8 +61,8 @@ const Login = () => {
         return;
       }
   
-      if (userData.role === 'admin') router.replace('/(admin)');
-      else router.replace('/(user)');
+      if (userData.role === 'admin') router.replace('/(admin)/startAdmin');
+      else router.replace('/(user)/startUser');
   
     } catch (e) {
       console.log('Login error:', e); 

@@ -1,5 +1,5 @@
 import { Stack, useRouter, useSegments } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 import { ActivityIndicator, View } from 'react-native';
 import { useFonts } from 'expo-font';
@@ -14,6 +14,7 @@ export default function Layout() {
   const segments = useSegments();
   const router = useRouter();
   const [hasMounted, setHasMounted] = useState(false);
+  const hasRegisteredToken = useRef(false);
 
   const [fontsLoaded, error] = useFonts({
     "Poppins-Black": require("../assets/fonts/Poppins-Black.ttf"),
@@ -63,6 +64,8 @@ export default function Layout() {
     const inUserRoute = segments[0] === '(user)';
     const inPendingRoute = segments[0] === 'pending';
     const inOtpRoute = segments[0] === 'auth' && segments[1] === 'otp';
+    // const inAdminStart = segments[1] === 'startAdmin';
+    // const inUserStart = segments[1] === 'startUser';
 
     const { isAccepted, isVerified, justLoggedIn, role } = useAuthStore.getState();
 
@@ -98,10 +101,34 @@ export default function Layout() {
       }
     }
 
-    if (user) {
-      registerAndStorePushToken();
-    }
+    // if (user && role) {
+    //   if (justLoggedIn) {
+    //     useAuthStore.setState({ justLoggedIn: false });
+    //     router.replace(role === 'admin' ? '/startAdmin' : '/startUser');
+    //     return;
+    //   }
+    
+    //   const inStartAdmin = segments[0] === 'startAdmin';
+    //   const inStartUser = segments[0] === 'startUser';
+    
+    //   if (role === 'admin') {
+    //     if (!inAdminRoute && !inStartAdmin) router.replace('/(admin)/(tabs)');
+    //   } else if (role === 'staff') {
+    //     if (!inUserRoute && !inStartUser) router.replace('/(user)/(tabs)');
+    //   }
+    // }
+    
+    
+    // if (user) {
+    //   registerAndStorePushToken();
+    // }
   }, [segments, user, role, loading, hasMounted]);
+
+  useEffect(() => {
+    // if (user) {
+      registerAndStorePushToken(); 
+    // }
+  }, []);
 
   if (!fontsLoaded && !error) {
     return null;

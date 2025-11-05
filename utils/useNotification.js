@@ -11,7 +11,7 @@ export const usePushNotification = () => {
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldPlaySound: true,
-      shouldShowAlert: true,
+      shouldShowBanner: true,
       shouldSetBadge: false,
     }),
   });
@@ -58,9 +58,9 @@ export const usePushNotification = () => {
   }
 
   useEffect(() => {
-    registerForPushNotificationsAsync().then((token) => {
-      setExpoPushToken(token);
-    });
+    // registerForPushNotificationsAsync().then((token) => {
+    //   setExpoPushToken(token);
+    // });
 
     // ✅ New way: subscriptions return objects with .remove()
     notificationListener.current =
