@@ -1,35 +1,41 @@
-import { StyleSheet, Text, View, Image, ScrollView, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, View, Image, Dimensions } from 'react-native';
 import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { images } from '../../../constants';
 
+const { height } = Dimensions.get('window');
+
 const HomeScreen = () => {
+  
+  const translateY = height * -0.05; 
+  const butterflySize = height * 0.35;
+
   return (
     <View style={styles.container}>
+      {/* Background halves */}
       <View style={styles.topContainer}>
         <Image 
           source={images.backgroundTop}
           style={styles.bgTop}
-          resizeMode='contain'
-        />
-        <Text style={styles.titleText}>IFLUTTER</Text>
-        <Image 
-          source={images.reflectedButterfly}
-          style={styles.butterflyImage}
-          resizeMode='contain'
+          resizeMode="cover"
         />
       </View>
-      <View style={styles.bottomTextContainer}>
-        <Text style={styles.bottomText}>Watch Them Grow,</Text>
-        <Text style={styles.bottomText}>Help Them Thrive</Text>
+      <View style={styles.bottomContainer} />
 
-        {/* <TouchableOpacity style={styles.button} onPress={handleContinue}>
-            <Text style={styles.buttonText}>Next</Text>
-            <Ionicons name="arrow-forward" size={20} color="#fff" style={{ marginRight: 8 }} />
-        </TouchableOpacity> */}
+      {/* Centered content */}
+      <View style={[styles.centerWrapper, { transform: [{ translateY }] }]}>
+        <View style={styles.contentContainer}>
+          <Text style={styles.titleText}>IFLUTTER</Text>
+          <Image 
+            source={images.reflectedButterfly}
+            style={[styles.butterflyImage, { width: butterflySize, height: butterflySize }]}
+            resizeMode="contain"
+          />
+          <View>
+            <Text style={styles.bottomText}>Watch Them Grow,</Text>
+            <Text style={styles.bottomText}>Help Them Thrive</Text>
+          </View>
+        </View>
       </View>
-      
     </View>
   );
 };
@@ -38,67 +44,57 @@ export default HomeScreen;
 
 const styles = StyleSheet.create({
   container: {
-      flex: 1,
-      backgroundColor: '#c4c4c4',
-  },
-  titleText:{
-      fontFamily: 'Poppins-SemiBold',
-      fontSize: 34,
-      textAlign: 'center',
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      top: '40%',
-      transform: [{ translateY: -15 }],
+    flex: 1,
   },
 
-  topContainer:{
-      width: '100%',
-      height: '50%',
-      backgroundColor: 'white',
-      position: 'relative'
-  },
-  bgTop:{
-      position: 'absolute',
-      width: '100%',
-      top: -32
+  topContainer: {
+    flex: 1,
+    backgroundColor: 'white',
   },
 
-  butterflyImage:{
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: [{ translateY: 30 }, { translateX: -120 }],
+  bottomContainer: {
+    flex: 1,
+    backgroundColor: '#c4c4c4',
   },
-      
-  bottomTextContainer:{
-      position: 'relative',
-      marginTop: 'auto',
-      marginBottom: 150,
+
+  bgTop: {
+    // width: '100%',
+    // height: '100%',
+    position: 'absolute',
   },
-  bottomText:{
-      fontFamily: 'Poppins-SemiBold',
-      fontSize: 28,
-      marginTop: -10,
-      textAlign: 'center',
+
+  // full-screen wrapper to center content
+  centerWrapper: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  button: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#007AFF',
-      borderWidth: 2,
-      borderColor: '#a1a2a8',
-      paddingVertical: 14,
-      paddingHorizontal: 30,
-      borderRadius: 30,
-      width: '50%',
-      gap: 20,
-      alignSelf: 'center',
+
+  contentContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 20,
   },
-  buttonText: {
-      fontFamily: 'Poppins-SemiBold',
-      color: '#fff',
-      fontSize: 16,
+
+  titleText: {
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 34,
+    textAlign: 'center',
+  },
+
+  butterflyImage: {
+    width: 500,
+    height: 500,
+  },
+
+  bottomText: {
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 28,
+    textAlign: 'center',
+    marginTop: -10,
   },
 });

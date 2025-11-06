@@ -1,4 +1,4 @@
-import { View, TextInput, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Alert, FlatList } from 'react-native';
+import { View, TextInput, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Alert, FlatList, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState, useEffect } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'expo-router';
@@ -9,7 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { images } from '../../constants';
 import axios from 'axios';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 const roles = ['Admin', 'Staff'];
 
 const Register = () => {
@@ -137,131 +137,140 @@ const Register = () => {
         style={styles.bgTop}
         resizeMode='contain'
       />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <Image 
+            source={images.logo}
+            style={styles.imageLogo}
+            resizeMode='contain'
+          />
+          <Text style={styles.title}>Sign Up</Text>
+          <View style={styles.tabContainer}>
+            {roles.map((item) => (
+              <TouchableOpacity
+                key={item}
+                onPress={() => setActiveRole(item)}
+                style={[
+                  styles.tabButton,
+                  activeRole === item ? styles.activeTabButton : styles.inactiveTabButton,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeRole === item ? styles.activeTabText : styles.inactiveTabText,
+                  ]}
+                >
+                  {item}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
-       <Image 
-        source={images.logo}
-        style={styles.imageLogo}
-        resizeMode='contain'
-      />
-      <Text style={styles.title}>Sign Up</Text>
-      <View style={styles.tabContainer}>
-        {roles.map((item) => (
-          <TouchableOpacity
-            key={item}
-            onPress={() => setActiveRole(item)}
-            style={[
-              styles.tabButton,
-              activeRole === item ? styles.activeTabButton : styles.inactiveTabButton,
-            ]}
-          >
-            <Text
+          <View style={styles.inputMainContainer}>
+            <Text style={styles.label}>Email address</Text>
+            <View 
               style={[
-                styles.tabText,
-                activeRole === item ? styles.activeTabText : styles.inactiveTabText,
+                styles.inputContainer,
+                isFocusedEmail && styles.inputContainerFocused
               ]}
             >
-              {item}
+              <TextInput 
+                placeholder="Enter email" 
+                value={email}
+                onChangeText={setEmail} 
+                style={styles.input}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                onFocus={() => setIsFocusedEmail(true)} 
+                onBlur={() => setIsFocusedEmail(false)} 
+              />
+            </View>
+          </View>
+          
+          <View style={styles.inputMainContainer}>
+            <Text style={styles.label}>Password</Text>
+            <View 
+              style={[
+                styles.inputContainer,
+                isFocusedPassword && styles.inputContainerFocused
+              ]}
+            >
+              <TextInput 
+                placeholder="Enter password" 
+                onFocus={() => setIsFocusedPassword(true)} 
+                onBlur={() => setIsFocusedPassword(false)} 
+                secureTextEntry={!showPassword} 
+                value={password} 
+                onChangeText={setPassword} 
+                style={styles.input}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <Ionicons
+                  name={`${!showPassword ? 'eye-off-outline' : "eye-outline"}`}
+                  size={28}
+                  color='blue'
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.inputMainContainer}>
+            <Text style={styles.label}>Confirm Password</Text>
+            <View style={[styles.inputContainer, isFocusedConfirmPassword && styles.inputContainerFocused]}>
+              <TextInput
+                placeholder="Confirm password"
+                onFocus={() => setIsFocusedConfirmPassword(true)}
+                onBlur={() => setIsFocusedConfirmPassword(false)}
+                secureTextEntry={!showConfirmPassword}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                style={styles.input}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                <Ionicons
+                  name={`${!showConfirmPassword ? 'eye-off-outline' : "eye-outline"}`}
+                  size={28}
+                  color='blue'
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {error ? (
+            <Text style={styles.errorText}>{error}</Text>
+          ) : null}
+
+          <TouchableOpacity 
+            onPress={handleRegister} 
+            style={[styles.registerButton, loading && styles.registerButtonDisabled]}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>
+              {loading ? 'Signing Up...' : 'Sign Up'}
             </Text>
           </TouchableOpacity>
-        ))}
-      </View>
 
-      <View style={styles.inputMainContainer}>
-        <Text style={styles.label}>Email address</Text>
-        <View 
-          style={[
-            styles.inputContainer,
-            isFocusedEmail && styles.inputContainerFocused
-          ]}
-        >
-          <TextInput 
-            placeholder="Enter email" 
-            value={email}
-            onChangeText={setEmail} 
-            style={styles.input}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            onFocus={() => setIsFocusedEmail(true)} 
-            onBlur={() => setIsFocusedEmail(false)} 
-          />
-        </View>
-      </View>
-      
-      <View style={styles.inputMainContainer}>
-        <Text style={styles.label}>Password</Text>
-        <View 
-          style={[
-            styles.inputContainer,
-            isFocusedPassword && styles.inputContainerFocused
-          ]}
-        >
-          <TextInput 
-            placeholder="Enter password" 
-            onFocus={() => setIsFocusedPassword(true)} 
-            onBlur={() => setIsFocusedPassword(false)} 
-            secureTextEntry={!showPassword} 
-            value={password} 
-            onChangeText={setPassword} 
-            style={styles.input}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-            <Ionicons
-              name={`${!showPassword ? 'eye-off-outline' : "eye-outline"}`}
-              size={28}
-              color='blue'
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.inputMainContainer}>
-        <Text style={styles.label}>Confirm Password</Text>
-        <View style={[styles.inputContainer, isFocusedConfirmPassword && styles.inputContainerFocused]}>
-          <TextInput
-            placeholder="Confirm password"
-            onFocus={() => setIsFocusedConfirmPassword(true)}
-            onBlur={() => setIsFocusedConfirmPassword(false)}
-            secureTextEntry={!showConfirmPassword}
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            style={styles.input}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-            <Ionicons
-              name={`${!showConfirmPassword ? 'eye-off-outline' : "eye-outline"}`}
-              size={28}
-              color='blue'
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {error ? (
-        <Text style={styles.errorText}>{error}</Text>
-      ) : null}
-
-      <TouchableOpacity 
-        onPress={handleRegister} 
-        style={[styles.registerButton, loading && styles.registerButtonDisabled]}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? 'Signing Up...' : 'Sign Up'}
-        </Text>
-      </TouchableOpacity>
-
-      <View style={styles.registerContainer}>
-        <Text style={styles.registerText}>Already have an account? </Text>
-        <TouchableOpacity onPress={() => router.push('/auth/login')}>
-          <Text style={styles.registerButtonText}>Sign In</Text>
-        </TouchableOpacity>
-      </View>
-
+          <View style={styles.registerContainer}>
+            <Text style={styles.registerText}>Already have an account? </Text>
+            <TouchableOpacity onPress={() => router.push('/auth/login')}>
+              <Text style={styles.registerButtonText}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
       <Image 
         source={images.backgroundBottom}
         style={styles.bgBottom}
@@ -275,10 +284,16 @@ const Register = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    justifyContent: 'center',
+    // padding: 24,
+    // justifyContent: 'center',
     backgroundColor: '#eaeaea',
     position: 'relative'
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 24,
+    paddingBottom: 80,
   },
   bgTop:{
     position: 'absolute',
