@@ -208,6 +208,34 @@ const ThresholdScreen = () => {
   }, []);
 
 
+  useEffect(() => {
+    const tempMinRef = ref(realtimeDB, 'Temperature/Min');
+    const tempMaxRef = ref(realtimeDB, 'Temperature/Max');
+    const humidMinRef = ref(realtimeDB, 'Humidity/Min');
+    const humidMaxRef = ref(realtimeDB, 'Humidity/Max');
+  
+    const unsubTempMin = onValue(tempMinRef, snapshot => {
+      if (snapshot.exists()) setMinTemp(String(snapshot.val()));
+    });
+    const unsubTempMax = onValue(tempMaxRef, snapshot => {
+      if (snapshot.exists()) setMaxTemp(String(snapshot.val()));
+    });
+  
+    const unsubHumidMin = onValue(humidMinRef, snapshot => {
+      if (snapshot.exists()) setMinHumid(String(snapshot.val()));
+    });
+    const unsubHumidMax = onValue(humidMaxRef, snapshot => {
+      if (snapshot.exists()) setMaxHumid(String(snapshot.val()));
+    });
+  
+    return () => {
+      unsubTempMin();
+      unsubTempMax();
+      unsubHumidMin();
+      unsubHumidMax();
+    };
+  }, []);
+
   const renderContent = () => {
     if (activeTab === 'Monitoring') {
       return (
@@ -316,6 +344,9 @@ const ThresholdScreen = () => {
                           ? 'Low Temperature'
                           : 'Normal Temperature'}
                       </Text>
+                      <Text style={[styles.sensorStatusText, { fontSize: 10, marginTop: 5 }]}>
+                        Safe Range: {minTemp}°C - {maxTemp}°C
+                      </Text>
                     </View>
                   </View>
                 </View>
@@ -350,6 +381,9 @@ const ThresholdScreen = () => {
                           : humidity < 30
                           ? 'Low Humidity'
                           : 'Good Condition'}
+                      </Text>
+                      <Text style={[styles.sensorStatusText, { fontSize: 10, marginTop: 5 }]}>
+                        Safe Range: {minHumid}% - {maxHumid}%
                       </Text>
                     </View>
                   </View>
@@ -486,7 +520,7 @@ const ThresholdScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         
-        <View style={[styles.innerContainer, { flex: 1 }]}>
+        <View style={[styles.innerContainer, { flex: 1, paddingBottom: 20  }]}>
           {renderContent()}
         </View>
       </ScrollView>
