@@ -328,9 +328,9 @@ const ThresholdScreen = () => {
                             color:
                               temperature === null
                                 ? 'gray'
-                                : temperature > 30
+                                : temperature > maxTemp
                                 ? 'red'
-                                : temperature < 18
+                                : temperature < minTemp
                                 ? 'lightblue'
                                 : 'green',
                           },
@@ -338,9 +338,9 @@ const ThresholdScreen = () => {
                       >
                         {temperature === null
                           ? 'Reading...'
-                          : temperature > 30
+                          : temperature > maxTemp
                           ? 'High Temperature'
-                          : temperature < 18
+                          : temperature < minTemp
                           ? 'Low Temperature'
                           : 'Normal Temperature'}
                       </Text>
@@ -366,9 +366,9 @@ const ThresholdScreen = () => {
                             color:
                               humidity === null
                                 ? 'gray' 
-                                : humidity > 70
+                                : humidity > maxHumid
                                 ? 'red'
-                                : humidity < 30
+                                : humidity < minHumid
                                 ? 'lightblue'
                                 : 'green',
                           },
@@ -376,9 +376,9 @@ const ThresholdScreen = () => {
                       >
                         {humidity === null
                           ? 'Reading...'
-                          : humidity > 70
+                          : humidity > maxHumid
                           ? 'High Humidity'
-                          : humidity < 30
+                          : humidity < minHumid
                           ? 'Low Humidity'
                           : 'Good Condition'}
                       </Text>
@@ -520,7 +520,7 @@ const ThresholdScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         
-        <View style={[styles.innerContainer, { flex: 1, paddingBottom: 20  }]}>
+        <View style={[styles.innerContainer, { flex: 1, paddingBottom: 20 }]}>
           {renderContent()}
         </View>
       </ScrollView>
